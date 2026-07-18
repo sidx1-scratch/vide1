@@ -1,0 +1,9 @@
+# Binary
+vide1
+
+# Scratch / temp files
+*.patch
+fix.py
+
+# OS
+.DS_Store
