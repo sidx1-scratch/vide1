@@ -21,11 +21,13 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"unicode"
 	"unsafe"
 
-	"github.com/creack/pty"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
+	"github.com/creack/pty"
 )
 
 // ── Messages ──────────────────────────────────────────────────────────────────
@@ -127,15 +129,36 @@ func (t *TerminalPane) appendLines(data string) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	// Split on newlines but keep partial lines by appending to last entry
-	parts := strings.Split(data, "\n")
 	if len(t.buf) == 0 {
 		t.buf = append(t.buf, "")
 	}
-	t.buf[len(t.buf)-1] += parts[0]
-	for _, p := range parts[1:] {
-		t.buf = append(t.buf, p)
+
+	runes := []rune(ansi.Strip(data))
+	for i := 0; i < len(runes); i++ {
+		r := runes[i]
+		switch r {
+		case '\r':
+			if i+1 < len(runes) && runes[i+1] == '\n' {
+				continue
+			}
+			t.buf[len(t.buf)-1] = ""
+		case '\n':
+			t.buf = append(t.buf, "")
+		case '\b':
+			line := []rune(t.buf[len(t.buf)-1])
+			if len(line) > 0 {
+				t.buf[len(t.buf)-1] = string(line[:len(line)-1])
+			}
+		case '\t':
+			t.buf[len(t.buf)-1] += "    "
+		default:
+			if unicode.IsControl(r) {
+				continue
+			}
+			t.buf[len(t.buf)-1] += string(r)
+		}
 	}
+
 	// Cap buffer
 	if len(t.buf) > maxBufLines {
 		t.buf = t.buf[len(t.buf)-maxBufLines:]
@@ -204,7 +227,7 @@ func (t *TerminalPane) Update(msg tea.Msg) tea.Cmd {
 			}
 		}
 		if seq != "" {
-			t.ptmx.WriteString(seq)
+			_, _ = t.ptmx.WriteString(seq)
 		}
 	}
 	return nil
@@ -257,7 +280,7 @@ func (t *TerminalPane) View(isActive bool) string {
 	}
 
 	t.mu.Lock()
-	buf := t.buf
+	buf := append([]string(nil), t.buf...)
 	t.mu.Unlock()
 
 	start := 0
@@ -269,7 +292,7 @@ func (t *TerminalPane) View(isActive bool) string {
 	lineStyle := lipgloss.NewStyle().Width(availW)
 	var lines []string
 	for _, l := range visible {
-		lines = append(lines, lineStyle.Render(l))
+		lines = append(lines, lineStyle.Render(ansi.Truncate(l, availW, "")))
 	}
 	// pad to fill height
 	for len(lines) < contentH {

@@ -18,22 +18,23 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // ── Palette ──────────────────────────────────────────────────────────────────
 var (
-	colorBg        = lipgloss.Color("#282C34")
-	colorBorder    = lipgloss.Color("#3E4452")
-	colorAccent    = lipgloss.Color("#C678DD") // magenta – active border
-	colorBlue      = lipgloss.Color("#61AFEF")
-	colorCyan      = lipgloss.Color("#56B6C2")
-	colorGreen     = lipgloss.Color("#98C379")
-	colorYellow    = lipgloss.Color("#E5C07B")
-	colorOrange    = lipgloss.Color("#D19A66")
-	colorRed       = lipgloss.Color("#E06C75")
-	colorGray      = lipgloss.Color("#5C6370")
-	colorFg        = lipgloss.Color("#ABB2BF")
-	colorDarkFg    = lipgloss.Color("#1E222A")
+	colorBg     = lipgloss.Color("#282C34")
+	colorBorder = lipgloss.Color("#3E4452")
+	colorAccent = lipgloss.Color("#C678DD") // magenta – active border
+	colorBlue   = lipgloss.Color("#61AFEF")
+	colorCyan   = lipgloss.Color("#56B6C2")
+	colorGreen  = lipgloss.Color("#98C379")
+	colorYellow = lipgloss.Color("#E5C07B")
+	colorOrange = lipgloss.Color("#D19A66")
+	colorRed    = lipgloss.Color("#E06C75")
+	colorGray   = lipgloss.Color("#5C6370")
+	colorFg     = lipgloss.Color("#ABB2BF")
+	colorDarkFg = lipgloss.Color("#1E222A")
 )
 
 // ── Nerd Font Icons ───────────────────────────────────────────────────────────
@@ -201,9 +202,7 @@ func renderStatusBar(path, mode string, width int) string {
 	if pathAvail < 0 {
 		pathAvail = 0
 	}
-	if len(path) > pathAvail && pathAvail > 3 {
-		path = "…" + path[len(path)-pathAvail+1:]
-	}
+	path = ansi.TruncateLeft(path, pathAvail, "…")
 
 	pathLabel := lipgloss.NewStyle().
 		Background(colorBg).

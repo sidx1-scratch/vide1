@@ -22,6 +22,7 @@ import (
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/x/ansi"
 )
 
 var (
@@ -72,6 +73,7 @@ type paneModel struct {
 	previewLoading bool
 
 	cursor int
+	scroll int
 	width  int
 	height int
 
@@ -116,6 +118,8 @@ func (m *paneModel) updateDirs() tea.Cmd {
 func (m *paneModel) updateChildDir() tea.Cmd {
 	if len(m.currentItems) == 0 {
 		m.childItems = nil
+		m.cursor = 0
+		m.scroll = 0
 		return nil
 	}
 	if m.cursor >= len(m.currentItems) {
@@ -124,6 +128,7 @@ func (m *paneModel) updateChildDir() tea.Cmd {
 	if m.cursor < 0 {
 		m.cursor = 0
 	}
+	m.ensureCursorVisible()
 
 	selected := m.currentItems[m.cursor]
 	if selected.IsDir() {
@@ -135,6 +140,41 @@ func (m *paneModel) updateChildDir() tea.Cmd {
 		m.previewPath = filepath.Join(m.currentPath, selected.Name())
 		m.previewLoading = true
 		return loadFileCmd(m.id, m.previewPath)
+	}
+}
+
+func (m *paneModel) visibleExplorerRows() int {
+	contentH := m.height - 3 // border plus one status line
+	rows := contentH - 4     // title, spacer, and breathing room
+	if rows < 1 {
+		rows = 1
+	}
+	return rows
+}
+
+func (m *paneModel) ensureCursorVisible() {
+	if len(m.currentItems) == 0 {
+		m.scroll = 0
+		return
+	}
+
+	rows := m.visibleExplorerRows()
+	if m.cursor < m.scroll {
+		m.scroll = m.cursor
+	}
+	if m.cursor >= m.scroll+rows {
+		m.scroll = m.cursor - rows + 1
+	}
+
+	maxScroll := len(m.currentItems) - rows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if m.scroll > maxScroll {
+		m.scroll = maxScroll
+	}
+	if m.scroll < 0 {
+		m.scroll = 0
 	}
 }
 
@@ -249,15 +289,15 @@ func (m *paneModel) Update(msg tea.Msg) tea.Cmd {
 				m.cmdInput = ""
 			case "enter":
 				if m.cmdInput == ":w" {
-					os.WriteFile(m.editPath, []byte(m.editor.Value()), 0644)
+					_ = os.WriteFile(m.editPath, []byte(m.editor.Value()), 0644)
 				} else if m.cmdInput == ":q" {
 					m.mode = ModeExplorer
 					// Reset the preview content so it reflects any changes
-					m.updateChildDir()
+					cmd = m.updateChildDir()
 				} else if m.cmdInput == ":wq" {
-					os.WriteFile(m.editPath, []byte(m.editor.Value()), 0644)
+					_ = os.WriteFile(m.editPath, []byte(m.editor.Value()), 0644)
 					m.mode = ModeExplorer
-					m.updateChildDir()
+					cmd = m.updateChildDir()
 				}
 				if m.mode == ModeEditorCommand {
 					m.mode = ModeEditorNormal
@@ -323,7 +363,7 @@ func (m *paneModel) View(isActive bool) string {
 			Background(colorBorder).
 			Foreground(colorFg).
 			Width(availWidth).
-			Render(" " + getFileIcon(m.editPath, false) + " " + m.editPath)
+			Render(ansi.Truncate(" "+getFileIcon(m.editPath, false)+" "+m.editPath, availWidth, "…"))
 
 		content := lipgloss.JoinVertical(lipgloss.Left, header, m.editor.View(), statusBar)
 		if isActive {
@@ -337,8 +377,9 @@ func (m *paneModel) View(isActive bool) string {
 		colWidth = 1
 	}
 
-	parentCol := renderColumn(filepath.Dir(m.currentPath), m.parentItems, -1, colWidth, contentH)
-	currentCol := renderColumn(m.currentPath, m.currentItems, m.cursor, colWidth, contentH)
+	m.ensureCursorVisible()
+	parentCol := renderColumn(filepath.Dir(m.currentPath), m.parentItems, -1, 0, colWidth, contentH)
+	currentCol := renderColumn(m.currentPath, m.currentItems, m.cursor, m.scroll, colWidth, contentH)
 
 	var childTitle string
 	var childContent string
@@ -347,11 +388,11 @@ func (m *paneModel) View(isActive bool) string {
 		selected := m.currentItems[m.cursor]
 		if selected.IsDir() {
 			childTitle = filepath.Join(m.currentPath, selected.Name())
-			childContent = renderColumn(childTitle, m.childItems, -1, colWidth, contentH)
+			childContent = renderColumn(childTitle, m.childItems, -1, 0, colWidth, contentH)
 		} else {
 			childTitle = "Preview: " + selected.Name()
 			if m.previewLoading && m.previewPath == filepath.Join(m.currentPath, selected.Name()) {
-				childContent = titleStyle.Render(childTitle) + "\n\nLoading..."
+				childContent = titleStyle.Render(ansi.Truncate(childTitle, colWidth, "…")) + "\n\nLoading..."
 			} else if m.previewPath == filepath.Join(m.currentPath, selected.Name()) {
 				lines := strings.Split(m.previewContent, "\n")
 				displayHeight := contentH - 4
@@ -360,16 +401,16 @@ func (m *paneModel) View(isActive bool) string {
 				}
 				var dispLines []string
 				for i := 0; i < len(lines) && i < displayHeight; i++ {
-					dispLines = append(dispLines, lines[i])
+					dispLines = append(dispLines, ansi.Truncate(lines[i], colWidth, ""))
 				}
-				childContent = titleStyle.Render(childTitle) + "\n\n" + strings.Join(dispLines, "\n")
+				childContent = titleStyle.Render(ansi.Truncate(childTitle, colWidth, "…")) + "\n\n" + strings.Join(dispLines, "\n")
 			} else {
-				childContent = titleStyle.Render(childTitle) + "\n\n"
+				childContent = titleStyle.Render(ansi.Truncate(childTitle, colWidth, "…")) + "\n\n"
 			}
 		}
 	} else {
 		childTitle = "Empty"
-		childContent = renderColumn(childTitle, m.childItems, -1, colWidth, contentH)
+		childContent = renderColumn(childTitle, m.childItems, -1, 0, colWidth, contentH)
 	}
 
 	cols := lipgloss.JoinHorizontal(
@@ -386,13 +427,14 @@ func (m *paneModel) View(isActive bool) string {
 	return gradientBorder(false).Width(availWidth).Height(availHeight).Render(content)
 }
 
-func renderColumn(title string, items []os.DirEntry, cursor int, width int, height int) string {
+func renderColumn(title string, items []os.DirEntry, cursor int, scroll int, width int, height int) string {
 	var s strings.Builder
 
-	shortTitle := title
-	if len(shortTitle) > width-4 && width-7 > 0 {
-		shortTitle = "…" + shortTitle[len(shortTitle)-(width-7):]
+	titleWidth := width
+	if titleWidth < 1 {
+		titleWidth = 1
 	}
+	shortTitle := ansi.TruncateLeft(title, titleWidth, "…")
 	s.WriteString(titleStyle.Render(shortTitle) + "\n\n")
 
 	displayHeight := height - 4
@@ -404,9 +446,17 @@ func renderColumn(title string, items []os.DirEntry, cursor int, width int, heig
 	end := len(items)
 
 	if cursor >= 0 {
-		if cursor >= displayHeight {
-			start = cursor - displayHeight + 1
+		maxScroll := len(items) - displayHeight
+		if maxScroll < 0 {
+			maxScroll = 0
 		}
+		if scroll < 0 {
+			scroll = 0
+		}
+		if scroll > maxScroll {
+			scroll = maxScroll
+		}
+		start = scroll
 		end = start + displayHeight
 		if end > len(items) {
 			end = len(items)
@@ -429,15 +479,16 @@ func renderColumn(title string, items []os.DirEntry, cursor int, width int, heig
 			name += "/"
 		}
 		maxNameLen := width - 8 // icon(2) + prefix(2) + padding
-		if maxNameLen > 0 && len(name) > maxNameLen {
-			name = name[:maxNameLen-1] + "…"
+		if maxNameLen < 1 {
+			maxNameLen = 1
 		}
+		name = ansi.Truncate(name, maxNameLen, "…")
 
 		entry := icon + " " + name
 		if i == cursor {
-			s.WriteString(focusedStyle.Render(fmt.Sprintf(" %s", entry)) + "\n")
+			s.WriteString(focusedStyle.Render(ansi.Truncate(fmt.Sprintf(" %s", entry), width, "")) + "\n")
 		} else {
-			s.WriteString(fileStyle.Render(fmt.Sprintf("  %s", entry)) + "\n")
+			s.WriteString(fileStyle.Render(ansi.Truncate(fmt.Sprintf("  %s", entry), width, "")) + "\n")
 		}
 	}
 
@@ -610,8 +661,8 @@ func (m wmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Batch(cmds...)
 		}
 
-		// tab: cycle focus (not while editor is capturing)
-		if msg.String() == "tab" && !isEditorActive && !isTermActive {
+		// tab: cycle focus outside editor modes
+		if msg.String() == "tab" && !isEditorActive {
 			leaves := m.root.Leaves()
 			for i, leaf := range leaves {
 				if leaf == m.activePane {
