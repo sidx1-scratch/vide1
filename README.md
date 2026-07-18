@@ -65,7 +65,7 @@ Spawn a live interactive shell inside any pane with `ctrl+t`. Keyboard input is 
 ### Build from source
 
 ```bash
-git clone https://github.com/yourname/vide1
+git clone https://github.com/sidx1-scratch/vide1
 cd vide1
 go build -o vide1 .
 ./vide1
