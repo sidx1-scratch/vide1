@@ -1,0 +1,50 @@
+name: Go
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build
+        run: go build -o vide1 .
+
+      - name: Test
+        run: go test -v ./...
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vide1
+          path: vide1
+
+      - name: Update Latest Release
+        if: github.event_name == 'push'
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: Latest Build
+          body: |
+            Automatically generated build from the latest commit.
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: "vide1"
+          token: ${{ secrets.GITHUB_TOKEN }}
