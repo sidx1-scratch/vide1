@@ -86,11 +86,10 @@ jobs:
         uses: ncipollo/release-action@v1
         with:
           tag: build-${{ steps.slug.outputs.sha }}
-          name: Build ${{ steps.slug.outputs.sha }}
+          name: Latest Build
           body: |
             i am 99.999% sure this proably works
-            
-            Automatically generated cross-platform builds from commit ${{ steps.slug.outputs.sha }}.
+          generateReleaseNotes: false
           makeLatest: true
           artifacts: "./artifacts/*"
           token: ${{ secrets.GITHUB_TOKEN }}
