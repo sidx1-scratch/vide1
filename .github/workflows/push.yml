@@ -13,7 +13,40 @@ permissions:
 
 jobs:
   build:
+    name: Build for ${{ matrix.goos }}-${{ matrix.goarch }}
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # --- Linux Architectures ---
+          - goos: linux
+            goarch: amd64
+            artifact_name: vide1-linux-amd64
+          - goos: linux
+            goarch: arm64
+            artifact_name: vide1-linux-arm64
+          - goos: linux
+            goarch: 386
+            artifact_name: vide1-linux-386
+
+          # --- macOS Architectures ---
+          - goos: darwin
+            goarch: amd64
+            artifact_name: vide1-darwin-amd64
+          - goos: darwin
+            goarch: arm64
+            artifact_name: vide1-darwin-arm64
+
+          # --- Windows Architectures ---
+          - goos: windows
+            goarch: amd64
+            artifact_name: vide1-windows-amd64.exe
+          - goos: windows
+            goarch: arm64
+            artifact_name: vide1-windows-arm64.exe
+          - goos: windows
+            goarch: 386
+            artifact_name: vide1-windows-386.exe
 
     steps:
       - name: Checkout
@@ -24,27 +57,43 @@ jobs:
         with:
           go-version: "1.24"
 
-      - name: Build
-        run: go build -o vide1 .
+      - name: Build Binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+        run: |
+          go build -o "${{ matrix.artifact_name }}" .
 
-      - name: Test
+      - name: Test (Linux AMD64 only)
+        if: matrix.goos == 'linux' && matrix.goarch == 'amd64'
         run: go test -v ./...
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: vide1
-          path: vide1
+          name: ${{ matrix.artifact_name }}
+          path: ${{ matrix.artifact_name }}
+
+  release:
+    name: Update Latest Release
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+          merge-multiple: true
 
       - name: Update Latest Release
-        if: github.event_name == 'push'
         uses: ncipollo/release-action@v1
         with:
           tag: latest
           name: Latest Build
           body: |
-            Automatically generated build from the latest commit.
+            Automatically generated cross-platform builds covering all major CPU architectures from the latest commit.
           allowUpdates: true
           replacesArtifacts: true
-          artifacts: "vide1"
+          artifacts: "./artifacts/*"
           token: ${{ secrets.GITHUB_TOKEN }}
