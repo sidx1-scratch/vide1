@@ -106,7 +106,147 @@ go run .
 ```
 
 ---
+### Install to PATH (System-wide)
 
+To make VIDE1 available from anywhere on your system, install it to a directory in your `PATH`:
+
+#### Option 1: Install to /usr/local/bin (Linux/macOS)
+
+```bash
+# Build and install system-wide
+sudo go build -o /usr/local/bin/vide1 .
+
+# Or if you already built it
+sudo cp vide1 /usr/local/bin/
+```
+
+#### Option 2: Install to ~/.local/bin (User-local, Linux/macOS)
+
+```bash
+# Create the directory if it doesn't exist
+mkdir -p ~/.local/bin
+
+# Build and install
+go build -o ~/.local/bin/vide1 .
+
+# Or copy existing binary
+cp vide1 ~/.local/bin/
+
+# Add ~/.local/bin to your PATH if not already there
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+# Or for Zsh:
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+# Reload your shell
+source ~/.bashrc  # or source ~/.zshrc
+```
+
+#### Option 3: Install to Windows PATH
+
+```cmd
+# Build the binary
+go build -o vide1.exe .
+
+# Copy to a directory in your PATH (e.g., C:\Tools)
+mkdir C:\Tools
+copy vide1.exe C:\Tools\
+
+# Add to PATH (Run as Administrator)
+setx /M PATH "%PATH%;C:\Tools"
+```
+
+#### Option 4: Use Go install (Recommended for Go developers)
+
+```bash
+# This installs directly to $GOPATH/bin (which should be in your PATH)
+go install github.com/sidx1-scratch/vide1@latest
+```
+
+After installation, you can run VIDE1 from any directory:
+
+```bash
+vide1
+```
+
+---
+
+## Usage
+
+### Basic Usage
+
+Launch VIDE1 from your terminal:
+
+```bash
+# Start in current directory
+vide1
+
+# Start in a specific directory
+vide1 /path/to/project
+
+# Start in your home directory
+vide1 ~
+```
+
+### Quick Start Guide
+
+1. **Navigate the file tree** using `j`/`k` to move up/down
+2. **Enter a directory** with `l`, `→`, or `Enter`
+3. **Go back** with `h` or `←`
+4. **Preview files** automatically — just select them
+5. **Open a file for editing** with `e`
+6. **Edit files** using Vim-like modal editing:
+   - `i` to enter Insert mode
+   - `Esc` to return to Normal mode
+   - `:` to enter Command mode
+   - `:w` to save, `:q` to quit
+7. **Split panes** with `Ctrl+w`
+8. **Open a terminal** with `Ctrl+t`
+9. **Switch panes** with `Tab`
+10. **Quit** with `q` or `Ctrl+c`
+
+### Example Workflow
+
+```bash
+# Start VIDE1 in your project
+vide1 ~/myproject
+
+# Navigate to src/
+j j l (or use arrow keys)
+
+# Open main.go for editing
+e
+
+# Enter insert mode and make changes
+i
+
+# Save and return to normal mode
+Esc
+:w
+
+# Quit the editor
+:q
+
+# Split the pane to see terminal
+Ctrl+w
+
+# Open a terminal in the new pane
+Ctrl+t
+
+# Switch back to file browser
+Tab
+
+# Quit VIDE1
+q
+```
+
+### Advanced Usage Tips
+
+- **Multiple panes**: Create a complex layout by repeatedly splitting panes with `Ctrl+w`
+- **Terminal integration**: Run commands in the terminal pane while editing files in another
+- **File preview**: Preview files without opening them by navigating through the file tree
+- **Quick navigation**: Use `h` and `l` to quickly traverse directory structures
+- **Workspace management**: Create custom layouts for different projects
+
+---
 ## Keybindings
 
 ### 🗂️ Explorer Mode
