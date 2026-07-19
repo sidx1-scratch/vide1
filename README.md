@@ -107,7 +107,7 @@ go run .
 
 ---
 ### Install a release
-If you dont want to mess around with go or git you can download a release ( linux only for now )
+If you don't want to compile from source or mess around with git or go, you can download a pre-built binary from the [Releases page](https://github.com/sidx1-scratch/vide1/releases/latest) (Linux and macOS only because the pty terminal only supports unix-like systems).
 
 ### Install to PATH (System-wide)
 
@@ -143,21 +143,7 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 source ~/.bashrc  # or source ~/.zshrc
 ```
 
-#### Option 3: Install to Windows PATH
-
-```cmd
-# Build the binary
-go build -o vide1.exe .
-
-# Copy to a directory in your PATH (e.g., C:\Tools)
-mkdir C:\Tools
-copy vide1.exe C:\Tools\
-
-# In PowerShell (Run as Administrator)
-[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools", "Machine")
-```
-
-#### Option 4: Use Go install (Recommended for Go developers)
+#### Option 3: Use Go install (Recommended for Go developers)
 
 ```bash
 # This installs directly to $GOPATH/bin (which should be in your PATH)
