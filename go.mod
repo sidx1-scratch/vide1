@@ -1,4 +1,4 @@
-module vide1
+module https://github.com/sidx1-scratch/vide1
 
 go 1.26.5
 
