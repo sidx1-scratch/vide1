@@ -23,7 +23,7 @@
 
 ---
 
-### VIDE1 Name Meaning
+###### VIDE1 Name Meaning
 
 VIDE1 intentionally carries **two complementary expansions**, reflecting the dual nature of the tool:
 
