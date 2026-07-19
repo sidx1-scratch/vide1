@@ -146,7 +146,7 @@ func (m *paneModel) updateChildDir() tea.Cmd {
 
 func (m *paneModel) visibleExplorerRows() int {
 	contentH := m.height - 3 // border plus one status line
-	rows := contentH - 4     // title, spacer, and breathing room
+	rows := contentH - 2     // title, spacer, and breathing room
 	if rows < 1 {
 		rows = 1
 	}
@@ -163,7 +163,7 @@ func (m *paneModel) ensureCursorVisible() {
 	if m.cursor < m.scroll {
 		m.scroll = m.cursor
 	}
-	if m.cursor >= m.scroll+rows {
+	if m.cursor >= m.scroll+rows-1 {
 		m.scroll = m.cursor - rows + 1
 	}
 
@@ -427,7 +427,7 @@ func (m *paneModel) View(isActive bool) string {
 				childContent = titleStyle.Render(ansi.Truncate(childTitle, colWidth, "…")) + "\n\nLoading..."
 			} else if m.previewPath == filepath.Join(m.currentPath, selected.Name()) {
 				lines := strings.Split(m.previewContent, "\n")
-				displayHeight := contentH - 4
+				displayHeight := contentH - 2
 				if displayHeight < 1 {
 					displayHeight = 1
 				}
@@ -469,7 +469,7 @@ func renderColumn(title string, items []os.DirEntry, cursor int, scroll int, wid
 	shortTitle := ansi.TruncateLeft(title, titleWidth, "…")
 	s.WriteString(titleStyle.Render(shortTitle) + "\n\n")
 
-	displayHeight := height - 4
+	displayHeight := height - 2
 	if displayHeight < 1 {
 		displayHeight = 1
 	}
@@ -629,13 +629,12 @@ func (m *wmModel) splitActive(newNode *Node) SplitDirection {
 	newNode.Parent = m.activePane
 
 	m.activePane.IsLeaf = false
-	m.activePane.IsTerminal = false
-	m.activePane.Pane = nil
-	m.activePane.TermPane = nil
-	m.activePane.Dir = dir
-	m.activePane.Child1 = child1
-	m.activePane.Child2 = newNode
-	m.activePane = newNode
+m.activePane.IsTerminal = false
+m.activePane.Dir = dir
+m.activePane.Child1 = child1
+m.activePane.Child2 = newNode
+m.activePane.Pane = nil
+m.activePane.TermPane = nil
 	return dir
 }
 
@@ -727,7 +726,7 @@ func (m wmModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// Route to active file-browser/editor pane
 		if m.activePane != nil && !m.activePane.IsTerminal && m.activePane.Pane != nil {
-			cmds = append(cmds, m.activePane.Pane.Update(msg))
+			if paneCmd := m.activePane.Pane.Update(msg); paneCmd != nil { cmds = append(cmds, paneCmd) }
 		}
 
 	case tea.WindowSizeMsg:
