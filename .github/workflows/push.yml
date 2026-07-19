@@ -83,6 +83,7 @@ jobs:
           body: |
             Automatically generated cross-platform builds covering major Unix and macOS CPU architectures from the latest commit.
           allowUpdates: true
+          recreatesTag: true
           replacesArtifacts: true
           artifacts: "./artifacts/*"
           token: ${{ secrets.GITHUB_TOKEN }}
