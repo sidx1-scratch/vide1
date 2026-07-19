@@ -106,6 +106,9 @@ go run .
 ```
 
 ---
+### Install a release
+If you dont want to mess around with go or git you can download a release ( linux only for now )
+
 ### Install to PATH (System-wide)
 
 To make VIDE1 available from anywhere on your system, install it to a directory in your `PATH`:
