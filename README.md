@@ -153,8 +153,8 @@ go build -o vide1.exe .
 mkdir C:\Tools
 copy vide1.exe C:\Tools\
 
-# Add to PATH (Run as Administrator)
-setx /M PATH "%PATH%;C:\Tools"
+# In PowerShell (Run as Administrator)
+[Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Tools", "Machine")
 ```
 
 #### Option 4: Use Go install (Recommended for Go developers)
@@ -227,9 +227,6 @@ Esc
 
 # Quit the editor
 :q
-
-# Split the pane to see terminal
-Ctrl+w
 
 # Open a terminal in the new pane
 Ctrl+t
