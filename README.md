@@ -10,6 +10,7 @@
 ```
 
 **Vim Integrated Development Environment**
+
 **Vim Inbuilt-editing Dynamically-tiling file Explorer**
 
 *A modern, keyboard-driven terminal file manager and editor built in Go.*
