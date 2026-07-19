@@ -41,84 +41,84 @@ var (
 
 func getFileIcon(name string, isDir bool) string {
 	if isDir {
-		return " "
+		return "📁"
 	}
 	ext := strings.ToLower(filepath.Ext(name))
 	base := strings.ToLower(name)
 
 	switch ext {
 	case ".go":
-		return " "
+		return "🐹"
 	case ".py":
-		return " "
+		return "🐍"
 	case ".js", ".mjs", ".cjs":
-		return " "
+		return "🟨"
 	case ".ts", ".tsx":
-		return " "
+		return "🟦"
 	case ".jsx":
-		return " "
+		return "⚛️"
 	case ".html", ".htm":
-		return " "
+		return "🌐"
 	case ".css", ".scss", ".sass":
-		return " "
+		return "🎨"
 	case ".json", ".jsonc":
-		return " "
+		return "⚙️"
 	case ".yaml", ".yml":
-		return " "
+		return "📝"
 	case ".toml":
-		return " "
+		return "🔧"
 	case ".sh", ".bash", ".zsh", ".fish":
-		return " "
+		return "🐚"
 	case ".md", ".mdx":
-		return " "
+		return "📖"
 	case ".txt":
-		return " "
+		return "📄"
 	case ".rs":
-		return " "
+		return "🦀"
 	case ".c", ".h":
-		return " "
+		return "🇨"
 	case ".cpp", ".cc", ".cxx", ".hpp":
-		return " "
+		return "➕"
 	case ".java":
-		return " "
+		return "☕"
 	case ".rb":
-		return " "
+		return "💎"
 	case ".php":
-		return " "
+		return "🐘"
 	case ".lua":
-		return " "
+		return "🌙"
 	case ".vim":
-		return " "
+		return "💚"
 	case ".git":
-		return " "
+		return "🌿"
 	case ".dockerfile", ".containerfile":
-		return " "
+		return "🐳"
 	case ".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".ico":
-		return " "
+		return "🖼️"
 	case ".mp4", ".mkv", ".avi", ".mov":
-		return " "
+		return "🎬"
 	case ".mp3", ".flac", ".wav", ".ogg":
-		return " "
+		return "🎵"
 	case ".zip", ".tar", ".gz", ".bz2", ".xz", ".7z", ".rar":
-		return " "
+		return "📦"
 	case ".pdf":
-		return " "
+		return "📕"
 	}
 
 	switch base {
 	case "makefile", "gnumakefile":
-		return " "
+		return "🛠️"
 	case "dockerfile":
-		return " "
+		return "🐳"
 	case "license", "licence":
-		return " "
+		return "📜"
 	case ".gitignore", ".gitmodules", ".gitattributes":
-		return " "
+		return "🙈"
 	case "readme.md", "readme.txt", "readme":
-		return " "
+		return "📖"
 	}
 
-	return " "
+	return "📄"
 }
 
 // ── Per-extension Lip Gloss Styles ───────────────────────────────────────────
