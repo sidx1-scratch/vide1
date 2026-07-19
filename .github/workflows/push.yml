@@ -64,26 +64,30 @@ jobs:
           path: ${{ matrix.artifact_name }}
 
   release:
-    name: Update Latest Release
+    name: Create Unique Release
     needs: build
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Get Short SHA
+        id: slug
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Download All Artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./artifacts
           merge-multiple: true
 
-      - name: Update Latest Release
+      - name: Create Unique Release
         uses: ncipollo/release-action@v1
         with:
-          tag: latest
-          name: Latest Build
+          tag: build-${{ steps.slug.outputs.sha }}
+          name: Build ${{ steps.slug.outputs.sha }}
           body: |
-            Automatically generated cross-platform builds covering major Unix and macOS CPU architectures from the latest commit.
-          allowUpdates: true
-          recreatesTag: true
-          replacesArtifacts: true
+            Automatically generated cross-platform builds from commit ${{ steps.slug.outputs.sha }}.
           artifacts: "./artifacts/*"
           token: ${{ secrets.GITHUB_TOKEN }}
