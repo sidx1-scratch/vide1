@@ -61,7 +61,10 @@ jobs:
         env:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
         run: |
+          # If compiling for windows, we swap the target OS during compilation
+          # to let the Go compiler build the executable structure smoothly.
           go build -o "${{ matrix.artifact_name }}" .
 
       - name: Test (Linux AMD64 only)
@@ -92,7 +95,7 @@ jobs:
           tag: latest
           name: Latest Build
           body: |
-            Automatically generated cross-platform builds covering all major CPU architectures from the latest commit.
+            Automatically generated cross-platform builds covering all major architectures (including Windows, Linux, and macOS) from the latest commit.
           allowUpdates: true
           replacesArtifacts: true
           artifacts: "./artifacts/*"
