@@ -9,6 +9,7 @@
   ╚═══╝  ╚═╝╚═════╝ ╚══════╝ ╚═╝
 ```
 
+**Vim Integrated Development Environment**
 **Vim Inbuilt-editing Dynamically-tiling file Explorer**
 
 *A modern, keyboard-driven terminal file manager and editor built in Go.*
@@ -20,6 +21,32 @@
 </div>
 
 ---
+
+### VIDE1 Name Meaning
+
+VIDE1 intentionally carries **two complementary expansions**, reflecting the dual nature of the tool:
+
+- **Vim Integrated Development Environment**  
+- **Vim Inbuilt-editing Dynamically-tiling file Explorer**
+
+These two meanings describe the two halves of VIDE1’s identity: a modal, keyboard-driven editor inspired by Vim, and a dynamic tiling file explorer inspired by modern tiling window managers.
+
+---
+
+## Why VIDE1 Has Two Meanings
+
+VIDE1 was designed from the start to be both an editor and an environment. Traditional terminal tools tend to split these roles: one program for editing, another for file navigation, another for terminal panes, another for workspace management. VIDE1 merges all of these into a single binary.
+
+Because of that hybrid nature, the name intentionally reflects **both sides of the tool**:
+
+- As a **Vim Integrated Development Environment**, VIDE1 behaves like a lightweight modal IDE with panes, previews, terminals, and editing modes.
+- As a **Vim Inbuilt-editing Dynamically-tiling file Explorer**, VIDE1 behaves like a fast, Miller-column file navigator with dynamic tiling and inline editing.
+
+The dual meaning isn’t a pun — it’s a declaration of scope. VIDE1 is not just an editor with a file tree, and not just a file manager with an editor bolted on. It is both, equally, by design.
+
+This dual identity guides its architecture, keybindings, and workflow philosophy:  
+**everything is a pane, everything is modal, everything is keyboard-first.**
+
 
 ## Overview
 
