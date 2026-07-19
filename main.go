@@ -38,9 +38,10 @@ var (
 			Foreground(colorBlue).
 			MarginBottom(1)
 
-	// focusedStyle: highlighted cursor row in explorer
+	// focusedStyle: high-contrast inverted block selection for current file/folder
 	focusedStyle = lipgloss.NewStyle().
-			Foreground(colorAccent).
+			Foreground(colorDarkFg).
+			Background(colorAccent).
 			Bold(true)
 
 	// normalStyle: non-highlighted rows
@@ -260,6 +261,35 @@ func (m *paneModel) Update(msg tea.Msg) tea.Cmd {
 				m.mode = ModeEditorInsert
 				m.editor.Focus()
 				m.editor.ShowLineNumbers = true
+			case "a": // Append right
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyRight})
+				m.mode = ModeEditorInsert
+				m.editor.Focus()
+			case "A": // Append at end of line
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyEnd})
+				m.mode = ModeEditorInsert
+				m.editor.Focus()
+			case "I": // Insert at beginning of line
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyHome})
+				m.mode = ModeEditorInsert
+				m.editor.Focus()
+			case "o": // Open line below
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyEnd})
+				m.editor.InsertString("\n")
+				m.mode = ModeEditorInsert
+				m.editor.Focus()
+			case "O": // Open line above
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyHome})
+				m.editor.InsertString("\n")
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyUp})
+				m.mode = ModeEditorInsert
+				m.editor.Focus()
+			case "x": // Delete char under cursor
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyDelete})
+			case "0": // Start of line
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyHome})
+			case "$": // End of line
+				m.editor, cmd = m.editor.Update(tea.KeyMsg{Type: tea.KeyEnd})
 			case ":":
 				m.mode = ModeEditorCommand
 				m.cmdInput = ":"
@@ -372,7 +402,9 @@ func (m *paneModel) View(isActive bool) string {
 		return gradientBorder(false).Width(availWidth).Height(availHeight).Render(content)
 	}
 
-	colWidth := availWidth / 3
+	// Adjusting column width to completely account for layout mathematics padding/borders.
+	// 3 columns * 3 cells structural tax = 9 cells total.
+	colWidth := (availWidth - 9) / 3
 	if colWidth <= 0 {
 		colWidth = 1
 	}
@@ -478,17 +510,18 @@ func renderColumn(title string, items []os.DirEntry, cursor int, scroll int, wid
 		if isDir {
 			name += "/"
 		}
-		maxNameLen := width - 8 // icon(2) + prefix(2) + padding
+		maxNameLen := width - 6
 		if maxNameLen < 1 {
 			maxNameLen = 1
 		}
 		name = ansi.Truncate(name, maxNameLen, "…")
 
-		entry := icon + " " + name
 		if i == cursor {
-			s.WriteString(focusedStyle.Render(ansi.Truncate(fmt.Sprintf(" %s", entry), width, "")) + "\n")
+			entry := fmt.Sprintf(" %s %s ", icon, name)
+			s.WriteString(focusedStyle.Render(ansi.Truncate(entry, width, "")) + "\n")
 		} else {
-			s.WriteString(fileStyle.Render(ansi.Truncate(fmt.Sprintf("  %s", entry), width, "")) + "\n")
+			entry := fmt.Sprintf("  %s %s", icon, name)
+			s.WriteString(fileStyle.Render(ansi.Truncate(entry, width, "")) + "\n")
 		}
 	}
 

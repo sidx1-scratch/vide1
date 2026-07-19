@@ -138,10 +138,9 @@ func (t *TerminalPane) appendLines(data string) {
 		r := runes[i]
 		switch r {
 		case '\r':
-			if i+1 < len(runes) && runes[i+1] == '\n' {
-				continue
-			}
-			t.buf[len(t.buf)-1] = ""
+			// Carriage returns should just move focus back or act as a no-op 
+			// rather than destructively erasing terminal logging.
+			continue
 		case '\n':
 			t.buf = append(t.buf, "")
 		case '\b':
