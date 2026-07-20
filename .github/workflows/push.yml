@@ -1,4 +1,4 @@
-name: Go
+name: compile and push for release
 
 on:
   push:
